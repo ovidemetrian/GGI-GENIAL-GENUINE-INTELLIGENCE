@@ -1,0 +1,12 @@
+{
+  "standard": "GGI",
+  "version": "1.0",
+  "spec": "https://10lawsofai.com",
+  "product": "YOUR PRODUCT NAME",
+  "level": "L1",
+  "code_location": "System prompt carries GGI-CODE.md v1.0",
+  "verification": "Describe how outputs are checked (L2), or null",
+  "record_export": "URL or steps where users export their record (L3), or null",
+  "contact": "you@example.com",
+  "declared": "2026-10-22"
+}

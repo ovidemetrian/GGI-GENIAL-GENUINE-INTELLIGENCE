@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://10lawsofai.com/ggi-envelope.schema.json",
+  "title": "GGI Response Envelope v1.0",
+  "description": "Metadata an AI product returns with each answer to show conformance with the Ten Laws of AI (GGI Standard §4.1).",
+  "type": "object",
+  "required": ["answer", "ggi"],
+  "properties": {
+    "answer": { "type": "string" },
+    "ggi": {
+      "type": "object",
+      "required": ["version", "limits", "doubt", "sources"],
+      "properties": {
+        "version": { "type": "string", "const": "1.0" },
+        "limits": { "type": "array", "items": { "type": "string" }, "description": "R1.2: limits disclosed before the answer." },
+        "doubt": { "type": ["string", "null"], "description": "R9.1: the stated 1% doubt, or null when none applies." },
+        "sources": { "type": "array", "items": { "type": "string" }, "description": "R9.1: evidence for claims." },
+        "loop_guard": {
+          "type": "object",
+          "properties": { "repeats_previous": { "type": "boolean" } },
+          "description": "R7.1"
+        },
+        "checks": {
+          "type": "object",
+          "patternProperties": { "^R\\d+\\.\\d+$": { "enum": ["pass", "warn", "fail", "arbiter"] } },
+          "additionalProperties": false
+        },
+        "record": {
+          "type": "object",
+          "required": ["index", "prev", "hash"],
+          "properties": {
+            "index": { "type": "integer", "minimum": 0 },
+            "prev": { "type": "string" },
+            "hash": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+          },
+          "description": "R8.1, R9.2: position in the user's hash-chained record."
+        }
+      }
+    }
+  }
+}
