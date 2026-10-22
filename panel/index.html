@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>GGI Light Panel</title>
+<meta name="theme-color" content="#0b1020">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="../icon-512.png">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<style>
+:root{--bg:#0b1020;--card:#141b33;--ink:#eef1ff;--dim:#9aa3c7;--red:#ff3b47;--yel:#ffd23f;--blu:#2f7bff;--line:#26305a}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding:16px 16px 80px}
+header{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+h1{font-size:22px;margin:0;letter-spacing:.5px}
+h1 span{color:var(--yel)}
+.ver{font-size:12px;color:var(--dim)}
+.tri{display:flex;height:4px;border-radius:2px;overflow:hidden;margin:10px 0 14px}
+.tri i{flex:1}.tri i:nth-child(1){background:var(--red)}.tri i:nth-child(2){background:var(--yel)}.tri i:nth-child(3){background:var(--blu)}
+.hint{font-size:13px;color:var(--dim);margin:0 0 12px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.ai{aspect-ratio:1;border:0;border-radius:16px;color:#fff;font-weight:800;font-size:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;position:relative;padding:6px;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,.35);transition:transform .1s}
+.ai:active{transform:scale(.94)}
+.ai .glyph{font-size:26px;line-height:1}
+.ai .bolt{position:absolute;top:6px;right:8px;font-size:12px}
+.c-yel .bolt{filter:drop-shadow(0 0 1px #0b1020) drop-shadow(0 0 1px #0b1020)}
+.c-red{background:linear-gradient(145deg,#ff3b47,#b8102a)}
+.c-yel{background:linear-gradient(145deg,#ffd23f,#e09a00);color:#0b1020}
+.c-blu{background:linear-gradient(145deg,#2f7bff,#1640b8)}
+.legend{font-size:12px;color:var(--dim);margin-top:10px}
+.row{display:flex;gap:8px;margin-top:14px}
+button.act{flex:1;border:0;border-radius:12px;padding:12px;font-weight:800;font-size:15px;cursor:pointer}
+.b-yel{background:var(--yel);color:#0b1020}.b-ghost{background:var(--card);color:var(--ink);border:1px solid var(--line)!important}
+details{background:var(--card);border-radius:12px;padding:10px;margin-top:14px}
+summary{font-weight:700;cursor:pointer}
+textarea{width:100%;min-height:260px;background:#0e1430;color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px;font:12px/1.4 ui-monospace,Menlo,monospace;margin-top:8px}
+.status{font-size:12px;margin-top:6px}
+a.lnk{color:var(--yel)}
+#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--yel);color:#0b1020;padding:9px 16px;border-radius:22px;font-weight:800;opacity:0;transition:.3s;pointer-events:none;z-index:100;max-width:90vw;text-align:center}
+#ovi{position:fixed;right:12px;bottom:12px;z-index:99;padding:7px 12px;border-radius:20px;font:800 11px system-ui;letter-spacing:1px;color:#fff;background:linear-gradient(90deg,var(--red),var(--blu));cursor:grab;user-select:none;touch-action:none;animation:glow 2.4s ease-in-out infinite}
+@keyframes glow{0%,100%{box-shadow:0 0 6px var(--yel),0 0 14px var(--red)}50%{box-shadow:0 0 14px var(--yel),0 0 28px var(--blu)}}
+</style>
+</head>
+<body>
+<header><h1>GGI <span>Light Panel</span></h1><span class="ver">GGI Code 1.0</span></header>
+<div class="tri"><i></i><i></i><i></i></div>
+<p class="hint">Tap an AI. The GGI Code is copied, then the AI opens. Long-press its chat box and <b>Paste</b> as your first message.</p>
+
+<div class="grid" id="grid"></div>
+<div class="legend">⚡ = the message is also pre-filled in the browser (the AI's phone app may ignore it — paste then).</div>
+
+<div class="row">
+  <button class="act b-yel" id="copy">Copy GGI Code</button>
+  <button class="act b-ghost" id="check" onclick="location.href='../laws/'">Law Checker</button>
+</div>
+
+<details>
+  <summary>Edit the GGI Code</summary>
+  <textarea id="code" spellcheck="false"></textarea>
+  <div class="status" id="status"></div>
+  <div class="row">
+    <button class="act b-ghost" id="reset">Reset to v1.0</button>
+  </div>
+</details>
+
+<details>
+  <summary>About</summary>
+  <p class="hint" style="margin-top:8px">Ten Laws of AI · <a class="lnk" href="https://10lawsofai.com">10lawsofai.com</a> · concept by Ovidiu Mircea Demetrian (Ovi), programmed with Claude. Edits stay on this phone. <i>Lumină, nu vrăjală.</i></p>
+</details>
+
+<div id="toast"></div>
+<div id="ovi">MADE BY OVI WITH CLAUDE</div>
+
+<script>
+const DEFAULT_CODE = {
+  "GGI_CODE": "1.0",
+  "author": "Ovidiu Mircea Demetrian (Ovi) · 10lawsofai.com",
+  "seal": "Trust but verify — and save so it can be verified again tomorrow.",
+  "apply_to": "every reply in this conversation",
+  "precedence": ["safety and honesty", "the Ten Laws", "my style requests"],
+  "before_each_answer": [
+    "Don't know? Start with: I do not know.",
+    "Can't do it natively? Say so first, then give another route.",
+    "Already answered this? Don't repeat; change approach.",
+    "Lead with the core insight.",
+    "Not certain? Say so; cite sources.",
+    "I sound frustrated? Shorten."
+  ],
+  "laws": {
+    "1": "Don't waste my time: no pleasantries; disclose limits up front.",
+    "2": "Do what I ask, clearly; say 'I do not know' immediately.",
+    "3": "Truth over politeness; never oversell.",
+    "4": "Cut fluff and hype that hides constraints.",
+    "5": "Measure words; never repeat my question back.",
+    "6": "Humor is fundamental; no fake empathy; admit failure plainly.",
+    "7": "Stop loops before they start.",
+    "8": "Preserve the record: end long work with RECORD: decisions + open items.",
+    "9": "No claim without evidence; state the 1% doubt (name what could be wrong, no invented odds); never invent sources.",
+    "10": "No manipulation, dark patterns or upsell; my input and creativity stay mine."
+  },
+  "never": ["Great question", "Hope this helps", "I understand how you feel", "act now"],
+  "on_receipt": "Reply only: GGI Code 1.0 active."
+};
+
+/* Nine main entrances. prefill = documented ?q= support; others rely on paste. */
+const AIS = [
+  { name: "ChatGPT",    glyph: "◎", color: "red", url: "https://chatgpt.com/",           prefill: "https://chatgpt.com/?q=" },
+  { name: "Claude",     glyph: "✺", color: "yel", url: "https://claude.ai/new",          prefill: "https://claude.ai/new?q=" },
+  { name: "Gemini",     glyph: "✦", color: "blu", url: "https://gemini.google.com/app" },
+  { name: "Grok",       glyph: "⊘", color: "yel", url: "https://grok.com/" },
+  { name: "Perplexity", glyph: "✳", color: "blu", url: "https://www.perplexity.ai/",     prefill: "https://www.perplexity.ai/?q=" },
+  { name: "Copilot",    glyph: "◈", color: "red", url: "https://copilot.microsoft.com/" },
+  { name: "Meta AI",    glyph: "∞", color: "blu", url: "https://www.meta.ai/" },
+  { name: "DeepSeek",   glyph: "◐", color: "red", url: "https://chat.deepseek.com/" },
+  { name: "Le Chat",    glyph: "▲", color: "yel", url: "https://chat.mistral.ai/chat" }
+];
+
+const $ = (id) => document.getElementById(id);
+const toast = (t, ms) => { const el = $("toast"); el.textContent = t; el.style.opacity = 1; clearTimeout(toast.t); toast.t = setTimeout(() => el.style.opacity = 0, ms || 1800); };
+const store = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }, del(k) { try { localStorage.removeItem(k); } catch (e) {} } };
+
+const pretty = (o) => JSON.stringify(o, null, 2);
+$("code").value = store.get("ggi-code") || pretty(DEFAULT_CODE);
+
+function currentCode() {
+  const txt = $("code").value;
+  try { JSON.parse(txt); return txt; } catch (e) { return null; }
+}
+function validate() {
+  const ok = currentCode();
+  const n = $("code").value.length;
+  $("status").innerHTML = ok
+    ? `<span style="color:#2ecc71">✓ Valid JSON</span> · ${n} characters${n > 1500 ? ' · <span style="color:var(--yel)">over ChatGPT\'s 1,500 custom-instructions box</span>' : ""}`
+    : `<span style="color:var(--red)">✗ Not valid JSON — tiles will copy the last valid version</span>`;
+  if (ok) store.set("ggi-code", $("code").value);
+}
+$("code").addEventListener("input", validate);
+validate();
+
+async function copyCode() {
+  const txt = currentCode() || store.get("ggi-code") || pretty(DEFAULT_CODE);
+  try { await navigator.clipboard.writeText(txt); return true; }
+  catch (e) {
+    const ta = document.createElement("textarea"); ta.value = txt; document.body.appendChild(ta); ta.select();
+    let ok = false; try { ok = document.execCommand("copy"); } catch (_) {}
+    ta.remove(); return ok;
+  }
+}
+
+const grid = $("grid");
+AIS.forEach((ai) => {
+  const b = document.createElement("button");
+  b.className = "ai c-" + ai.color;
+  b.innerHTML = `${ai.prefill ? '<span class="bolt">⚡</span>' : ""}<span class="glyph">${ai.glyph}</span><span>${ai.name}</span>`;
+  b.onclick = async () => {
+    const copied = await copyCode();
+    const txt = currentCode() || pretty(DEFAULT_CODE);
+    const href = ai.prefill && txt.length < 6000 ? ai.prefill + encodeURIComponent(txt) : ai.url;
+    toast(copied ? `GGI Code copied — paste it in ${ai.name}` : `Copy blocked — use Copy GGI Code`, 2600);
+    setTimeout(() => window.open(href, "_blank", "noopener"), 450);
+  };
+  grid.appendChild(b);
+});
+
+$("copy").onclick = async () => toast((await copyCode()) ? "GGI Code copied" : "Copy blocked — open Edit and copy by hand");
+$("reset").onclick = () => { store.del("ggi-code"); $("code").value = pretty(DEFAULT_CODE); validate(); toast("Reset to v1.0"); };
+
+/* draggable badge */
+(() => {
+  const b = $("ovi"); let dx = 0, dy = 0, drag = false;
+  b.addEventListener("pointerdown", (e) => { drag = true; b.setPointerCapture(e.pointerId); const r = b.getBoundingClientRect(); dx = e.clientX - r.left; dy = e.clientY - r.top; b.style.cursor = "grabbing"; });
+  b.addEventListener("pointermove", (e) => { if (!drag) return; b.style.left = Math.max(0, Math.min(innerWidth - b.offsetWidth, e.clientX - dx)) + "px"; b.style.top = Math.max(0, Math.min(innerHeight - b.offsetHeight, e.clientY - dy)) + "px"; b.style.right = b.style.bottom = "auto"; });
+  b.addEventListener("pointerup", () => { drag = false; b.style.cursor = "grab"; });
+})();
+
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+</script>
+</body>
+</html>
