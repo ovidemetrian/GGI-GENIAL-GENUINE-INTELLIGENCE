@@ -1,7 +1,7 @@
 /* ============================================================
    GGI ENFORCER v1.0 — The Ten Laws of AI as executable code
    Concept & Laws: Ovidiu Mircea Demetrian (Ovi) · 10lawsofai.com
-   Built with Claude · "Lumină, nu vrăjală"
+   "Lumină, nu vrăjală"
    Works in the browser (window.GGI) and in Node (require).
    ============================================================ */
 (function (root) {
