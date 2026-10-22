@@ -1,7 +1,7 @@
 # GGI Protocol v1.0 — The Ten Laws of AI, as code
 
 Concept & Laws: **Ovidiu Mircea Demetrian (Ovi)** · https://10lawsofai.com
-Programmed with Claude · *Lumină, nu vrăjală*
+*Lumină, nu vrăjală*
 
 > Trust but verify — and save so it can be verified again tomorrow.
 
@@ -31,7 +31,7 @@ const system = GGI.buildSystemPrompt("both");      // "human" | "developer" | "b
 const result = GGI.check(reply, { prompt, previous });
 // → { score: 0-100, verdicts: [{law, name, status, note}], needsArbiter: [3, 9] }
 const log = [];
-await GGI.record(log, { model: "Claude", prompt, response: reply, result });
+await GGI.record(log, { model: "any-model", prompt, response: reply, result });
 await GGI.verifyChain(log);                         // → { ok: true, brokenAt: null }
 ```
 

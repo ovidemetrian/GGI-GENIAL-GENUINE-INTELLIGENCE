@@ -1,7 +1,7 @@
 {
   "name": "GGI Light Panel",
   "short_name": "GGI Panel",
-  "description": "Nine AIs, one tap, GGI Code pre-loaded. Concept by Ovi, programmed with Claude.",
+  "description": "Nine AIs, one tap, GGI Code pre-loaded. Concept by Ovi.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

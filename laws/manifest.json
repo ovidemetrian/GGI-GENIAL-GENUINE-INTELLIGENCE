@@ -1,7 +1,7 @@
 {
   "name": "GGI Law Checker",
   "short_name": "GGI Laws",
-  "description": "Check any AI reply against the Ten Laws of AI. Concept by Ovi, built with Claude.",
+  "description": "Check any AI reply against the Ten Laws of AI. Concept by Ovi.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
