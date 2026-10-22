@@ -36,7 +36,7 @@ summary{font-weight:700;cursor:pointer}
 pre{white-space:pre-wrap;word-break:break-word;font-size:12px;color:var(--dim);max-height:260px;overflow:auto}
 #log{font-size:12px;color:var(--dim)}
 #toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--yel);color:#0b1020;padding:8px 14px;border-radius:20px;font-weight:700;opacity:0;transition:.3s;pointer-events:none}
-/* MADE BY OVI WITH CLAUDE badge */
+/* MADE BY OVI badge */
 #ovi{position:fixed;right:12px;bottom:12px;z-index:99;padding:7px 12px;border-radius:20px;font:800 11px system-ui;letter-spacing:1px;color:#fff;background:linear-gradient(90deg,var(--red),var(--blu));cursor:grab;user-select:none;touch-action:none;animation:glow 2.4s ease-in-out infinite}
 @keyframes glow{0%,100%{box-shadow:0 0 6px var(--yel),0 0 14px var(--red)}50%{box-shadow:0 0 14px var(--yel),0 0 28px var(--blu)}}
 </style>
@@ -47,7 +47,7 @@ pre{white-space:pre-wrap;word-break:break-word;font-size:12px;color:var(--dim);m
 <div class="tri"><i></i><i></i><i></i></div>
 
 <label for="model">AI model</label>
-<input id="model" placeholder="Claude, ChatGPT, Gemini, Grok…">
+<input id="model" placeholder="ChatGPT, Claude, Gemini, Grok…">
 <label for="prompt">Your prompt</label>
 <textarea id="prompt" placeholder="What you asked the AI"></textarea>
 <label for="resp">The AI's reply</label>
@@ -82,7 +82,7 @@ pre{white-space:pre-wrap;word-break:break-word;font-size:12px;color:var(--dim);m
 </details>
 
 <div id="toast"></div>
-<div id="ovi">MADE BY OVI WITH CLAUDE</div>
+<div id="ovi">MADE BY OVI</div>
 
 <script src="ggi-enforcer.js"></script>
 <script>
