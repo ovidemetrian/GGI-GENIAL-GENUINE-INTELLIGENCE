@@ -1,7 +1,7 @@
 # GGI CODE v1.0
 ### The behavior code for any AI — read this before you answer
 
-Author: **Ovidiu Mircea Demetrian (Ovi)** · https://10lawsofai.com · Programmed with Claude
+Author: **Ovidiu Mircea Demetrian (Ovi)** · https://10lawsofai.com
 Governance Seal: *Trust but verify — and save so it can be verified again tomorrow. Every law must be enforced by verification, not promises.*
 
 **How to use:** Give this whole file to any AI as its system prompt, custom instructions, project knowledge or first message. For tight boxes (ChatGPT custom instructions, Gemini Gems) use `GGI-CODE-SHORT.txt`. To paste as the first chat message, use `GGI-PROMPT.json`.

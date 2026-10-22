@@ -1,7 +1,7 @@
 # GGI STANDARD v1.0
 ### A conformance standard for building the Ten Laws of AI into AI products
 
-Author: **Ovidiu Mircea Demetrian (Ovi)** · https://10lawsofai.com · Programmed with Claude
+Author: **Ovidiu Mircea Demetrian (Ovi)** · https://10lawsofai.com
 Status: Draft for public comment · October 2026
 
 The key words **MUST**, **MUST NOT**, **SHOULD** and **MAY** are used as in RFC 2119.
