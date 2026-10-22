@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>GGI Law Checker</title>
+<meta name="theme-color" content="#0b1020">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="../icon-512.png">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<style>
+:root{--bg:#0b1020;--card:#141b33;--ink:#eef1ff;--dim:#9aa3c7;--red:#ff3b47;--yel:#ffd23f;--blu:#2f7bff;--grn:#2ecc71;--line:#26305a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding:16px 16px 90px}
+h1{font-size:22px;margin:4px 0 2px;letter-spacing:.5px}
+h1 span{color:var(--yel)}
+.sub{color:var(--dim);font-size:13px;margin-bottom:14px}
+.tri{display:flex;height:4px;border-radius:2px;overflow:hidden;margin:8px 0 16px}
+.tri i{flex:1}.tri i:nth-child(1){background:var(--red)}.tri i:nth-child(2){background:var(--yel)}.tri i:nth-child(3){background:var(--blu)}
+label{display:block;font-size:13px;color:var(--dim);margin:12px 0 4px}
+textarea,input{width:100%;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px;font:inherit}
+textarea{min-height:90px;resize:vertical}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+button{flex:1;min-width:120px;border:0;border-radius:10px;padding:12px;font-weight:700;font-size:15px;cursor:pointer;color:#0b1020}
+.b-red{background:var(--red);color:#fff}.b-yel{background:var(--yel)}.b-blu{background:var(--blu);color:#fff}.b-ghost{background:var(--card);color:var(--ink);border:1px solid var(--line)}
+#score{font-size:44px;font-weight:800;text-align:center;margin:18px 0 4px}
+#scoreNote{text-align:center;color:var(--dim);font-size:13px}
+.v{display:flex;gap:10px;align-items:flex-start;background:var(--card);border-radius:10px;padding:10px;margin-top:8px;border-left:5px solid var(--line)}
+.v b{min-width:28px;text-align:center}
+.v .t{font-size:13px;color:var(--dim)}
+.pass{border-left-color:var(--grn)}.warn{border-left-color:var(--yel)}.fail{border-left-color:var(--red)}.arbiter{border-left-color:var(--blu)}
+.chip{font-size:11px;font-weight:800;padding:2px 7px;border-radius:20px;text-transform:uppercase;margin-left:6px}
+.pass .chip{background:var(--grn);color:#062}.warn .chip{background:var(--yel);color:#330}.fail .chip{background:var(--red);color:#fff}.arbiter .chip{background:var(--blu);color:#fff}
+details{background:var(--card);border-radius:10px;padding:10px;margin-top:16px}
+summary{font-weight:700;cursor:pointer}
+pre{white-space:pre-wrap;word-break:break-word;font-size:12px;color:var(--dim);max-height:260px;overflow:auto}
+#log{font-size:12px;color:var(--dim)}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--yel);color:#0b1020;padding:8px 14px;border-radius:20px;font-weight:700;opacity:0;transition:.3s;pointer-events:none}
+/* MADE BY OVI WITH CLAUDE badge */
+#ovi{position:fixed;right:12px;bottom:12px;z-index:99;padding:7px 12px;border-radius:20px;font:800 11px system-ui;letter-spacing:1px;color:#fff;background:linear-gradient(90deg,var(--red),var(--blu));cursor:grab;user-select:none;touch-action:none;animation:glow 2.4s ease-in-out infinite}
+@keyframes glow{0%,100%{box-shadow:0 0 6px var(--yel),0 0 14px var(--red)}50%{box-shadow:0 0 14px var(--yel),0 0 28px var(--blu)}}
+</style>
+</head>
+<body>
+<h1>GGI <span>Law Checker</span></h1>
+<div class="sub">Ten Laws of AI · 10lawsofai.com · Lumină, nu vrăjală</div>
+<div class="tri"><i></i><i></i><i></i></div>
+
+<label for="model">AI model</label>
+<input id="model" placeholder="Claude, ChatGPT, Gemini, Grok…">
+<label for="prompt">Your prompt</label>
+<textarea id="prompt" placeholder="What you asked the AI"></textarea>
+<label for="resp">The AI's reply</label>
+<textarea id="resp" placeholder="Paste the reply here"></textarea>
+<label for="prev">Its previous reply (optional, catches loops)</label>
+<textarea id="prev" style="min-height:60px"></textarea>
+
+<div class="row">
+  <button class="b-red" id="go">Check the Laws</button>
+  <button class="b-yel" id="rec">Seal to Record</button>
+</div>
+
+<div id="out"></div>
+
+<div class="row">
+  <button class="b-blu" id="copyPrompt">Copy GGI prompt</button>
+  <button class="b-ghost" id="copyArb">Copy Arbiter prompt</button>
+</div>
+
+<details>
+  <summary>Record (Law Eight) · <span id="count">0</span> sealed</summary>
+  <div id="log"></div>
+  <div class="row">
+    <button class="b-ghost" id="verify">Verify chain</button>
+    <button class="b-ghost" id="export">Export JSON</button>
+  </div>
+</details>
+
+<details>
+  <summary>GGI system prompt (paste into any AI)</summary>
+  <pre id="sys"></pre>
+</details>
+
+<div id="toast"></div>
+<div id="ovi">MADE BY OVI WITH CLAUDE</div>
+
+<script src="ggi-enforcer.js"></script>
+<script>
+const $ = (id) => document.getElementById(id);
+let last = null, log = [];
+try { log = JSON.parse(localStorage.getItem("ggi-log") || "[]"); } catch (e) { log = []; }
+const save = () => { try { localStorage.setItem("ggi-log", JSON.stringify(log)); } catch (e) {} };
+const toast = (t) => { const el = $("toast"); el.textContent = t; el.style.opacity = 1; setTimeout(() => el.style.opacity = 0, 1600); };
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const copy = async (t) => { try { await navigator.clipboard.writeText(t); toast("Copied"); } catch (e) { toast("Copy blocked — select manually"); } };
+
+$("sys").textContent = GGI.buildSystemPrompt("both");
+
+function renderLog() {
+  $("count").textContent = log.length;
+  $("log").innerHTML = log.slice().reverse().slice(0, 20).map((e) =>
+    `<div>#${e.index} · ${esc(e.model)} · ${e.score ?? "–"} · ${e.time.slice(0, 16).replace("T", " ")}<br><code>${e.hash.slice(0, 16)}…</code></div><hr style="border-color:#26305a">`).join("");
+}
+renderLog();
+
+$("go").onclick = () => {
+  const r = $("resp").value.trim();
+  if (!r) return toast("Paste a reply first");
+  last = GGI.check(r, { prompt: $("prompt").value, previous: $("prev").value });
+  const col = last.score >= 80 ? "var(--grn)" : last.score >= 50 ? "var(--yel)" : "var(--red)";
+  $("out").innerHTML = `<div id="score" style="color:${col}">${last.score}</div>
+    <div id="scoreNote">Laws checked by code · ${last.needsArbiter.length} need an arbiter (blue)</div>` +
+    last.verdicts.map((v) => `<div class="v ${v.status}"><b>${v.law}</b><div><div>${esc(v.name)}<span class="chip">${v.status}</span></div><div class="t">${esc(v.note)}</div></div></div>`).join("");
+};
+
+$("rec").onclick = async () => {
+  if (!last) return toast("Check first, then seal");
+  await GGI.record(log, { model: $("model").value || "unknown", prompt: $("prompt").value, response: $("resp").value, result: last });
+  save(); renderLog(); toast("Sealed #" + (log.length - 1));
+};
+$("verify").onclick = async () => { const v = await GGI.verifyChain(log); toast(v.ok ? "Chain intact ✓" : "Broken at #" + v.brokenAt); };
+$("export").onclick = () => {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(log, null, 2)], { type: "application/json" }));
+  a.download = "ggi-record.json"; a.click();
+};
+$("copyPrompt").onclick = () => copy(GGI.buildSystemPrompt("both"));
+$("copyArb").onclick = () => copy(GGI.arbiterPrompt($("prompt").value, $("resp").value));
+
+// draggable badge
+(() => {
+  const b = $("ovi"); let dx = 0, dy = 0, drag = false;
+  b.addEventListener("pointerdown", (e) => { drag = true; b.setPointerCapture(e.pointerId); const r = b.getBoundingClientRect(); dx = e.clientX - r.left; dy = e.clientY - r.top; b.style.cursor = "grabbing"; });
+  b.addEventListener("pointermove", (e) => { if (!drag) return; b.style.left = Math.max(0, Math.min(innerWidth - b.offsetWidth, e.clientX - dx)) + "px"; b.style.top = Math.max(0, Math.min(innerHeight - b.offsetHeight, e.clientY - dy)) + "px"; b.style.right = b.style.bottom = "auto"; });
+  b.addEventListener("pointerup", () => { drag = false; b.style.cursor = "grab"; });
+})();
+
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+</script>
+</body>
+</html>
