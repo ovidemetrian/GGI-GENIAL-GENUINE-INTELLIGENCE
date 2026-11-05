@@ -1,6 +1,6 @@
 /* GGI Control Panel — offline shell.
    Law VIII: preservation of record. The panel must open with or without a network. */
-const CACHE = 'ggi-panel-v34-4';
+const CACHE = 'ggi-panel-v34-6';
 
 /* Required: install fails if any of these are missing. Keep this list minimal. */
 const CORE = ['./', './index.html', './manifest.json'];
