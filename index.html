@@ -2395,8 +2395,30 @@ body.lumina-theme #M3_ISOLATED .card.open .expand-arrow {
 #govBtn:hover{ filter: brightness(1.05); transform: translateY(-1px); }
 #govBtn:active{ transform: translateY(0px) scale(0.99); }
 
+#connBtn{
+  width:240px; max-width:240px; height:38px; padding:0 12px 2px;
+  font-size:14px; font-weight:800; letter-spacing:0.45px; text-transform:uppercase;
+  background:linear-gradient(145deg, rgba(185,28,28,0.96), rgba(29,78,216,0.96));
+  border:1px solid rgba(253,224,71,0.45); border-radius:12px; color:#fde047; cursor:pointer;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), inset 0 -6px 14px rgba(0,0,0,0.42), 0 0 14px rgba(59,130,246,0.5), 0 10px 18px rgba(0,0,0,0.45);
+  text-shadow:0 1px 0 rgba(0,0,0,0.85); display:flex; align-items:center; justify-content:center; gap:8px;
+  transition: transform .15s ease, filter .15s ease;
+}
+#connBtn:hover{ filter:brightness(1.06); transform:translateY(-1px); }
+#connBtn:active{ transform:scale(0.99); }
+.conn-row{ display:grid; grid-template-columns:1fr auto; gap:4px 10px; padding:9px 10px; margin:6px 0; border:1px solid #333; border-radius:10px; background:rgba(255,255,255,0.03); }
+.conn-name{ font-weight:800; color:#fff; font-size:13px; }
+.conn-meta{ grid-column:1 / -1; font-size:11.5px; color:#bbb; line-height:1.45; }
+.conn-pill{ font-size:10.5px; font-weight:900; letter-spacing:1px; padding:3px 8px; border-radius:999px; align-self:start; white-space:nowrap; }
+.conn-pill.on{ background:#14532d; color:#86efac; border:1px solid #22c55e; }
+.conn-pill.off{ background:#1f2937; color:#9ca3af; border:1px solid #4b5563; }
+.conn-pill.plan{ background:#422006; color:#fde047; border:1px solid #ca8a04; }
+.conn-laws{ grid-column:1 / -1; display:flex; flex-wrap:wrap; gap:4px; }
+.conn-law{ font-size:10px; padding:2px 6px; border-radius:6px; border:1px solid #444; color:#ddd; }
+.conn-law.ok{ border-color:#22c55e; color:#86efac; }
+.conn-law.warn{ border-color:#ca8a04; color:#fde047; }
 @media (max-width: 520px){
-  #clarityOS, #govBtn{ width: 100%; max-width: 100%; }
+  #clarityOS, #govBtn, #connBtn{ width: 100%; max-width: 100%; }
 }
 
 
@@ -3107,12 +3129,15 @@ body.lumina-theme .info-content::-webkit-scrollbar-thumb {
         <button id="govBtn" type="button" aria-label="Open 10 Laws of AI Governance">
           📜 10 LAWS OF AI GOVERNANCE
         </button>
+        <button id="connBtn" type="button" aria-label="Open connectors status">
+          🔌 CONNECTORS
+        </button>
       </div>
     </section>
     
     <div id="M3_ISOLATED">
       <div class="globalM3 card">
-        <textarea id="globalPrompt" placeholder="Send one prompt to selected AIs..."></textarea>
+        <textarea id="globalPrompt" placeholder="Send one prompt through the selected connectors..."></textarea>
         <div class="global-controls">
           <button onclick="m3_sendAll()" class="btn-send-selected">SEND TO SELECTED</button>
           <button onclick="m3_selectAll()" class="btn-select-all">SELECT ALL</button>
@@ -3350,6 +3375,18 @@ body.lumina-theme .info-content::-webkit-scrollbar-thumb {
 </div>
 <div id="panelCode" class="codebox" aria-hidden="true"></div>
 
+<div id="connOverlay" class="gov-overlay" aria-hidden="true">
+  <div class="gov-card">
+    <div class="gov-head">
+      <div class="gov-title">CONNECTORS — WHAT IS LINKED, UNDER THE TEN LAWS</div>
+      <button id="connClose" class="gov-close">✕ CLOSE</button>
+    </div>
+    <div class="gov-doc-title">Connectors</div>
+    <div class="gov-doc-subtitle">Stage 1 of 3 · status and audit · nothing here sends data anywhere</div>
+    <div id="connBody"></div>
+    <div class="gov-foot">Law IX: trust but verify · Law X: no manipulation, no extraction</div>
+  </div>
+</div>
 <div id="govOverlay" class="gov-overlay" aria-hidden="true">
   <div class="gov-card">
     <div class="gov-head">
@@ -4131,6 +4168,71 @@ if(govClose){ bindInstant(govClose, closeGovernance); }
 if(govCloseBottom){ bindInstant(govCloseBottom, closeGovernance); }
 if(govOverlay){ govOverlay.addEventListener("click", (e)=>{ if(e.target===govOverlay) closeGovernance(); }); }
 
+/* ===== CONNECTORS — Stage 1: status + Ten Laws audit (read-only) ===== */
+const CONN_APPS = [
+  { name:"Gmail",           why:"Read and draft mail for a briefing",      stage:3 },
+  { name:"Google Calendar", why:"See the day before it starts",            stage:3 },
+  { name:"Google Drive",    why:"Pull documents into a session",           stage:3 },
+  { name:"Sonos",           why:"Room audio for the panel's sound cues",   stage:3 }
+];
+function connLaw(label, ok, title){ return `<span class="conn-law ${ok?'ok':'warn'}" title="${title}">${label}</span>`; }
+function connEsc(t){ return String(t).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+function renderConnectors(){
+  const body = document.getElementById("connBody");
+  if(!body) return;
+  let html = '<div class="gov-doc-section">AI Connectors</div>';
+  let linked = 0;
+  (typeof M3_MODELS!=="undefined" ? M3_MODELS : []).forEach(m=>{
+    const cfg = getStoredConfig(m.id);
+    const on = !!(cfg && cfg.apiKey);
+    if(on) linked++;
+    const ep = cfg && cfg.endpoint ? new URL(cfg.endpoint, location.href).host : "—";
+    html += `<div class="conn-row">
+      <div class="conn-name">${connEsc(m.display)} <span style="color:#888;font-weight:600">· ${connEsc(m.provider)}</span></div>
+      <span class="conn-pill ${on?'on':'off'}">${on?'PLUGGED IN':'UNPLUGGED'}</span>
+      <div class="conn-meta">${on?`Endpoint: ${connEsc(ep)} · model: ${connEsc(cfg.model||'default')}`:'Tap 🔌 on its card to plug it in.'}</div>
+      <div class="conn-laws">
+        ${connLaw("L1 limits disclosed", true, "Key prompt says it is kept only for this session")}
+        ${connLaw(on?"L9 calls logged":"L9 idle", true, "Each call is written to the card log")}
+        ${connLaw("L10 key not stored", true, "Key lives in sessionStorage, gone when the tab closes")}
+      </div>
+    </div>`;
+  });
+  html += '<div class="gov-doc-section">App Connectors</div>';
+  CONN_APPS.forEach(a=>{
+    html += `<div class="conn-row">
+      <div class="conn-name">${connEsc(a.name)}</div>
+      <span class="conn-pill plan">PLANNED · STAGE ${a.stage}</span>
+      <div class="conn-meta">${connEsc(a.why)}. Needs its own sign-in; not linked yet.</div>
+      <div class="conn-laws">
+        ${connLaw("L1 not live, said so", true, "Shown as planned, not pretended")}
+        ${connLaw("L10 consent first", false, "Must ask before reading anything")}
+      </div>
+    </div>`;
+  });
+  html += `<div class="gov-doc-body" style="margin-top:10px">${linked} AI connector(s) plugged in this session. App connectors arrive in stage 3, each behind its own sign-in, read-only until you approve.</div>`;
+  body.innerHTML = html;
+  return linked;
+}
+const connBtn = document.getElementById("connBtn");
+const connOverlay = document.getElementById("connOverlay");
+function openConnectors(){
+  if(!connOverlay) return;
+  const n = renderConnectors();
+  connOverlay.classList.add("active"); connOverlay.setAttribute("aria-hidden","false");
+  clickSound({freq:540, type:"sine", dur:0.08, gain:0.06, slide:1.08});
+  addLog(`🔌 CONNECTORS opened — ${n} plugged in.`);
+}
+function closeConnectors(){
+  if(!connOverlay) return;
+  connOverlay.classList.remove("active"); connOverlay.setAttribute("aria-hidden","true");
+  clickSound({freq:300, type:"triangle", dur:0.06, gain:0.05, slide:0.9});
+}
+if(connBtn){ bindInstant(connBtn, ()=>{ pulse(connBtn); openConnectors(); }); }
+const connClose = document.getElementById("connClose");
+if(connClose){ bindInstant(connClose, closeConnectors); }
+if(connOverlay){ connOverlay.addEventListener("click", (e)=>{ if(e.target===connOverlay) closeConnectors(); }); }
+
 function render(){
   // REACTIVE STATE (Law 6/Living)
   const p = profile;
@@ -4410,8 +4512,8 @@ function m3_setKey(id) {
   const config = getStoredConfig(id) || {};
   const providerConfig = API_CONFIG[modelInfo.provider];
   
-  let message = `Configure ${modelInfo.display}\n\n`;
-  message += `API Key (kept only for this browser session):`;
+  let message = `Plug in the ${modelInfo.display} connector\n\n`;
+  message += `Connector key — the provider's API key (kept only for this browser session):`;
   const key = prompt(message);
   if(!key) return;
   
@@ -4429,7 +4531,7 @@ function m3_setKey(id) {
   
   saveConfigToStorage(id, config);
   updateStatusIndicator(id, 'connected');
-  m3_addToLog(id, '✅ API configuration saved');
+  m3_addToLog(id, '🔌 Connector plugged in');
 }
 
 function updateStatusIndicator(id, status) {
@@ -4454,7 +4556,7 @@ async function callAPI(modelInfo, prompt) {
   const config = getStoredConfig(modelInfo.id);
   
   if(!config || !config.apiKey) {
-    throw new Error('API key not configured. Click 🔑 to set up.');
+    throw new Error('Connector not plugged in. Tap 🔌 to connect.');
   }
   
   const providerConfig = API_CONFIG[modelInfo.provider] || {
@@ -4520,9 +4622,9 @@ async function callAPI(modelInfo, prompt) {
 
   // Create 3 accordion groups
   const groups = [
-    { title: "TOP TIER MODELS", models: M3_MODELS.slice(0, 4), id: "group1", expanded: true },
-    { title: "MID TIER MODELS", models: M3_MODELS.slice(4, 8), id: "group2", expanded: false },
-    { title: "CUSTOM MODELS", models: M3_MODELS.slice(8, 12), id: "group3", expanded: false }
+    { title: "🔌 TOP TIER CONNECTORS", models: M3_MODELS.slice(0, 4), id: "group1", expanded: true },
+    { title: "🔌 MID TIER CONNECTORS", models: M3_MODELS.slice(4, 8), id: "group2", expanded: false },
+    { title: "🔌 CUSTOM CONNECTORS", models: M3_MODELS.slice(8, 12), id: "group3", expanded: false }
   ];
 
   groups.forEach(group => {
@@ -4565,7 +4667,7 @@ async function callAPI(modelInfo, prompt) {
         <div class="status-dot ${hasConfig ? 'connected' : ''}"></div>
         <div style="flex:1; padding-left:10px; font-size:15px;">${modelInfo.display}</div>
         <input type="checkbox" class="model-checkbox" id="checkbox_${modelInfo.id}" onclick="event.stopPropagation();">
-        <button class="icon-btn" onclick="event.stopPropagation(); m3_setKey('${modelInfo.id}')">🔑</button>
+        <button class="icon-btn" onclick="event.stopPropagation(); m3_setKey('${modelInfo.id}')" title="Plug in connector" aria-label="Plug in connector">🔌</button>
       `;
 
       const body = document.createElement("div");
